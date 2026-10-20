@@ -1,0 +1,23 @@
+name: Build Windows
+on: [push]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dezipper
+        run: Expand-Archive -Path sit-win.zip -DestinationPath app_src -Force
+      - name: Installer Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Construire EXE
+        run: |
+          cd app_src
+          npm install
+          npm run make
+      - name: Uploader EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: SIT-GESTION-Windows
+          path: app_src/out/make/**/*
