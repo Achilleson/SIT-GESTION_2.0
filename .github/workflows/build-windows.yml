@@ -13,11 +13,18 @@ jobs:
           node-version: '20'
       - name: Construire EXE
         run: |
-          cd app_src
+          Get-ChildItem app_src -Recurse -Depth 3
+          $pkg = Get-ChildItem -Path app_src -Filter package.json -Recurse | Select-Object -First 1
+          if (-not $pkg) { Write-Error "package.json introuvable"; exit 1 }
+          $dir = $pkg.DirectoryName
+          Write-Host "Projet trouvé dans: $dir"
+          Set-Location $dir
           npm install
           npm run make
+          $out = Get-ChildItem -Path . -Filter "out" -Recurse -Directory | Select-Object -First 1
+          if ($out) { Copy-Item -Path $out.FullName -Destination $env:GITHUB_WORKSPACE\final_out -Recurse -Force }
       - name: Uploader EXE
         uses: actions/upload-artifact@v4
         with:
           name: SIT-GESTION-Windows
-          path: app_src/out/make/**/*
+          path: final_out/**/*
